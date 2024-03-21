@@ -1,3 +1,4 @@
+```
 \# multi-lorentzian    
 \# .xcm file for Xspec to fit simultaneously:    
   
@@ -366,3 +367,4 @@ bayes off
 \# I can notice them again and the model of the lags and the coherence should pass through the data.  
   
 ignore 5-6:**  
+```
