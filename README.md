@@ -62,32 +62,31 @@ cosmo 70 0 0.73
 xset delta 0.01  
 xset LINECRITLEVEL  1e-12  
   
-\# This is the Lorentzian for the Real part, as in eq. 7 of my paper  
+\# This is the Lorentzian multiplied by the cosine of the lags for the Real part, as in eq. 7 of Mendez et al. 2024  
   
 mdefine xlor Lorentz(LineE,Width)cos(plag) : add  
   
-\# This is the Lorentzian for the Imaginary part, as in eq. 7 of my paper  
+\# This is the Lorentzian multiplied by the sine of the lags for the Imaginary part, as in eq. 7 of Mendez et al. 2024 
   
 mdefine ylor Lorentz(LineE,Width)sin(plag) : add  
   
-\# This is the definition of the coherence as in eq. 10 of my paper  
+\# This is the definition of the coherence as in eq. 10 of Mendez et al. 2024  
   
 \# Because the way it is defined, I need to put inside more  
-\# Lorentzians than the ones I will use. This is so because if I want to add another one  
-\# later, I cannot use "addcomponent" in xspec, and I have to define  
-\# the whole model again.  
-\# By doing it this way I can put the norms of all the unecessary Lorentzians to 0 at the start,   
-\#cand freeze all the parameters of the Lorentzian, and start letting them free if I need to  
-\ # add a new Lorentzian.  
+\# Lorentzians than the ones I will use. This is so because if I want to add another Lorentzian  
+\# later on, I cannot use "addcomp" in Xspec, and I have to define the whole model again.  
+\# By doing it this way I can put the norms of all the unnecessary Lorentzians to 0 at the start,   
+\# and freeze all the parameters of the Lorentzian, and start letting them free if I need to  
+\# add a new Lorentzian to the model.  
   
 mdefine coherence ((xlor(LineE1,Width1,plag1)*norm1+xlor(LineE2,Width2,plag2)*norm2+xlor(LineE3,Width3,plag3)*norm3+xlor(LineE4,Width4,plag4)*norm4+xlor(LineE5,Width5,plag5)*norm5+xlor(LineE6,Width6,plag6)*norm6+xlor(LineE7,Width7,plag7)*norm7+xlor(LineE8,Width8,plag8)*norm8+xlor(LineE9,Width9,plag9)*norm9+xlor(LineE10,Width10,plag10)*norm10)**2+(ylor(LineE1,Width1,plag1)*norm1+ylor(LineE2,Width2,plag2)*norm2+ylor(LineE3,Width3,plag3)*norm3+ylor(LineE4,Width4,plag4)*norm4+ylor(LineE5,Width5,plag5)*norm5+ylor(LineE6,Width6,plag6)*norm6+ylor(LineE7,Width7,plag7)*norm7+ylor(LineE8,Width8,plag8)*norm8+ylor(LineE9,Width9,plag9)*norm9+ylor(LineE10,Width10,plag10)*norm10)**2)/((Lorentz(LineE1,Width1)*nn1+Lorentz(LineE2,Width2)*nn2+Lorentz(LineE3,Width3)*nn3+Lorentz(LineE4,Width4)*nn4+Lorentz(LineE5,Width5)*nn5+Lorentz(LineE6,Width6)*nn6+Lorentz(LineE7,Width7)*nn7+Lorentz(LineE8,Width8)*nn8+Lorentz(LineE9,Width9)*nn9+Lorentz(LineE10,Width10)*nn10)*(Lorentz(LineE1,Width1)*mm1+Lorentz(LineE2,Width2)*mm2+Lorentz(LineE3,Width3)*mm3+Lorentz(LineE4,Width4)*mm4+Lorentz(LineE5,Width5)*mm5+Lorentz(LineE6,Width6)*mm6+Lorentz(LineE7,Width7)*mm7+Lorentz(LineE8,Width8)*mm8+Lorentz(LineE9,Width9)*mm9+Lorentz(LineE10,Width10)*mm10)) : add  
   
-\# This is the definition of the lags as in eq. 9 of my paper  
+\# This is the definition of the lags as in eq. 9 of Mendez et al. 2024 
 \# The same considerations about the number of Lorentzians applies here as it applied in the coherence.  
   
 mdefine plags atan2(ylor(LineE1,Width1,plag1)*norm1+ylor(LineE2,Width2,plag2)*norm2+ylor(LineE3,Width3,plag3)*norm3+ylor(LineE4,Width4,plag4)*norm4+ylor(LineE5,Width5,plag5)*norm5+ylor(LineE6,Width6,plag6)*norm6+ylor(LineE7,Width7,plag7)*norm7+ylor(LineE8,Width8,plag8)*norm8+ylor(LineE9,Width9,plag9)*norm9+ylor(LineE10,Width10,plag10)*norm10,xlor(LineE1,Width1,plag1)*norm1+xlor(LineE2,Width2,plag2)*norm2+xlor(LineE3,Width3,plag3)*norm3+xlor(LineE4,Width4,plag4)*norm4+xlor(LineE5,Width5,plag5)*norm5+xlor(LineE6,Width6,plag6)*norm6+xlor(LineE7,Width7,plag7)*norm7+xlor(LineE8,Width8,plag8)*norm8+xlor(LineE9,Width9,plag9)*norm9+xlor(LineE10,Width10,plag10)*norm10) : add  
   
-\# Here I define the model to fit the PDS in band1. This would be like eq. 3 (first row) in my paper.  
+\# Here I define the model to fit PS1. This would be like eq. 3 (first row) in Mendez 2024.  
 \# Notice that I only have 3 Lorentzxians. All the others are set to 0 and frozen.  
 \# Also, I do not use 0, but 1e-10 as 0, because this makes the fits and the errors more stable. It  
 \# doees not make any difference because 1e-10 is effectively 0, but the fits are more stable.   
@@ -124,9 +123,9 @@ model  1:1pds lorentz + lorentz + lorentz + lorentz + lorentz + lorentz + lorent
         3.79816         -1      1e-10      1e-10      1e+10      1e+10  
           1e-10         -1      1e-10      1e-10      1e+10      1e+10  
   
-\# Here I define the model to fit the PDS in band1. This would be like eq. 3 (second row) in my paper.  
-\# Notice how some of the parameters are linked to PDS1  
-\# I only leave the normalisations free  
+\# Here I define the model to fit PS2. This would be like eq. 3 (second row) in Mendez et al. 2024.  
+\# Notice how some of the parameters are linked to those of PS1  
+\# I only leave the normalisations of the Lorentzians free  
   
 model  2:2pds lorentz + lorentz + lorentz + lorentz + lorentz + lorentz + lorentz + lorentz + lorentz + lorentz  
 = 1pds:p1  
@@ -160,8 +159,8 @@ model  2:2pds lorentz + lorentz + lorentz + lorentz + lorentz + lorentz + lorent
 = 1pds:p29  
           1e-10         -1      1e-10      1e-10      1e+10      1e+10  
   
-\# Here I define the model to fit the Real part of the cross spectrum (first row of eq. 8)  
-\# Notice how some of the parameters are linked to PDS1  
+\# Here I define the model to fit the Real part of the cross spectrum (first row of eq. 8 in Mendez et al. 2024)  
+\# Notice how some of the parameters are linked to PS1  
   
 model  3:3rea xlor + xlor + xlor + xlor + xlor + xlor + xlor + xlor + xlor + xlor  
 = 1pds:p1  
@@ -205,8 +204,8 @@ model  3:3rea xlor + xlor + xlor + xlor + xlor + xlor + xlor + xlor + xlor + xlo
               0         -1      -1000      -1000       1000       1000  
           1e-10         -1      1e-10      1e-10      1e+10      1e+10  
   
-\# Here I define the model to fit the Imaginary part of the cross spectrum (second row of eq. 8).  
-\# Notice that there is no free parameters cause these are the same parameters of the Real part (see eq. 8),   
+\# Here I define the model to fit the Imaginary part of the cross spectrum (secopnd row of eq. 8 in Mendez et al. 2024).  
+\# Notice that there is no free parameters cause these are the same parameters of the Real part (see eq. 8 in Mendez et al.. 2024),   
   
 model  4:4ima ylor + ylor + ylor + ylor + ylor + ylor + ylor + ylor + ylor + ylor  
 = 3rea:p1  
@@ -251,7 +250,7 @@ model  4:4ima ylor + ylor + ylor + ylor + ylor + ylor + ylor + ylor + ylor + ylo
 = 3rea:p40  
   
 \# Here I define the model of the lags. Notice that there is no free parameter,   
-\# because the values of the parameters come fromt the fit of PDS1 PDS RE and IM  
+\# because the values of the parameters come fromt the fit of PS1 PS2 RE and IM  
   
 model  5:5pla plags  
 = 3rea:p1  
@@ -297,7 +296,7 @@ model  5:5pla plags
               1         -1          0          0      1e+20      1e+24  
   
 \# Here I define the model of the coherence. Notice that there is no free parameter,   
-\# because the values of the parameters come fromt the fit of PDS1 PDS RE and IM  
+\# because the values of the parameters come fromt the fit of PS1 PS2 RE and IM  
   
 model  6:6coh coherence  
 = 3rea:p1  
@@ -363,7 +362,7 @@ model  6:6coh coherence
               1         -1          0          0      1e+20      1e+24  
 bayes off  
   
-\# Here I ignore dataeerts 5 and 6 because I am not fitting them. Once I have the fit   
+\# Here I ignore datasets 5 and 6 because I am not fitting them. Once I have the fit   
 \# I can notice them again and the model of the lags and the coherence should pass through the data.  
   
 ignore 5-6:**  
