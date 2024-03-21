@@ -1,6 +1,6 @@
-# multi-lorentzian
-# .xcm file for Xspec to fit simultaneously:
-#
+\# multi-lorentzian
+\# .xcm file for Xspec to fit simultaneously:
+\#
 # Power spectrum band 1 (PS1)
 # Power spectrum band 2 (PS2)
 # Real part of the cross spectrum of band 1 vs. band 2 (RE)
