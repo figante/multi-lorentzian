@@ -1,4 +1,4 @@
-Here you'll find an .xcm file for Xspec () to fit simultaneously:    
+Here you'll find an .xcm file for Xspec [example_constant_phase_lags,xcm](https://github.com/figante/multi-lorentzian/blob/main/example_constant_phase_lags.xcm) to fit simultaneously:    
 
 Power spectrum band 1 (PS1)    
 Power spectrum band 2 (PS2)    
