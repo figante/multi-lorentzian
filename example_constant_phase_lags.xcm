@@ -71,7 +71,9 @@ mdefine xlor Lorentz(LineE,Width)cos(plag) : add
 \# This is the Lorentzian multiplied by the sine of the lags for the Imaginary part, as in eq. 7 of Mendez et al. 2024 
   
 mdefine ylor Lorentz(LineE,Width)sin(plag) : add  
-  
+
+\# In this case, the phase lags (parameter plag) is independent of Fourier frequency
+
 \# This is the definition of the coherence as in eq. 10 of Mendez et al. 2024  
   
 \# Because the way it is defined, I need to put inside more  
