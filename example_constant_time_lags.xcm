@@ -6,15 +6,17 @@
 \# Power spectrum band 2 (PS2)    
 \# Real part of the cross spectrum of band 1 vs. band 2 (RE)    
 \# Imaginary part of the cross spectrum of band 1 vs. band 2 (IM)    
+\#
 \# The .xcm file uses a linear combination of Lorentizans to fit PS1 and PS2    
 \# and a combination of Lorentzians multiplied by the cosine (sine) of a parameter    
 \# (the phase lag) to RE (IM).    
+\#
 \# The .xcm file also reads the phase-lag (PL) spectrum and the coherence function (CF)    
 \# and computes the derived model of these two on the basis of the model fitted to   
 \# PS1, PS2, RE and IM.    
 \#  
 \# This one assumes the constant time-lags model
-\# See for [Mendez et al. 2024](https://ui.adsabs.harvard.edu/abs/2024MNRAS.527.9405M/abstract) for details    
+\# See [Mendez et al. 2024](https://ui.adsabs.harvard.edu/abs/2024MNRAS.527.9405M/abstract) for details    
   
 statistic chi  
   
@@ -79,21 +81,23 @@ mdefine ylor Lorentz(LineE,Width)sin(2*3.14159265*E*tlag) : add
 \# Because the way it is defined, I need to put inside more  
 \# Lorentzians than the ones I will use. This is so because if I want to add another Lorentzian  
 \# later on, I cannot use "addcomp" in Xspec, and I have to define the whole model again.  
+\#
 \# By doing it this way I can put the norms of all the unnecessary Lorentzians to 0 at the start,   
-\# and freeze all the parameters of the Lorentzian, and start letting them free if I need to  
+\# and freeze all the parameters of the Lorentzian, and let them free one by one if I need to  
 \# add a new Lorentzian to the model.  
   
 mdefine coherence ((xlor(LineE1,Width1,tlag1)*norm1+xlor(LineE2,Width2,tlag2)*norm2+xlor(LineE3,Width3,tlag3)*norm3+xlor(LineE4,Width4,tlag4)*norm4+xlor(LineE5,Width5,tlag5)*norm5+xlor(LineE6,Width6,tlag6)*norm6+xlor(LineE7,Width7,tlag7)*norm7+xlor(LineE8,Width8,tlag8)*norm8+xlor(LineE9,Width9,tlag9)*norm9+xlor(LineE10,Width10,tlag10)*norm10)**2+(ylor(LineE1,Width1,tlag1)*norm1+ylor(LineE2,Width2,tlag2)*norm2+ylor(LineE3,Width3,tlag3)*norm3+ylor(LineE4,Width4,tlag4)*norm4+ylor(LineE5,Width5,tlag5)*norm5+ylor(LineE6,Width6,tlag6)*norm6+ylor(LineE7,Width7,tlag7)*norm7+ylor(LineE8,Width8,tlag8)*norm8+ylor(LineE9,Width9,tlag9)*norm9+ylor(LineE10,Width10,tlag10)*norm10)**2)/((Lorentz(LineE1,Width1)*nn1+Lorentz(LineE2,Width2)*nn2+Lorentz(LineE3,Width3)*nn3+Lorentz(LineE4,Width4)*nn4+Lorentz(LineE5,Width5)*nn5+Lorentz(LineE6,Width6)*nn6+Lorentz(LineE7,Width7)*nn7+Lorentz(LineE8,Width8)*nn8+Lorentz(LineE9,Width9)*nn9+Lorentz(LineE10,Width10)*nn10)*(Lorentz(LineE1,Width1)*mm1+Lorentz(LineE2,Width2)*mm2+Lorentz(LineE3,Width3)*mm3+Lorentz(LineE4,Width4)*mm4+Lorentz(LineE5,Width5)*mm5+Lorentz(LineE6,Width6)*mm6+Lorentz(LineE7,Width7)*mm7+Lorentz(LineE8,Width8)*mm8+Lorentz(LineE9,Width9)*mm9+Lorentz(LineE10,Width10)*mm10)) : add  
   
 \# This is the definition of the lags as in eq. 9 of Mendez et al. 2024 
-\# The same considerations about the number of Lorentzians applies here as it applied in the coherence.  
+\# The same considerations about the number of Lorentzians applies here as it applied for the coherence.  
   
 mdefine plags atan2(ylor(LineE1,Width1,tlag1)*norm1+ylor(LineE2,Width2,tlag2)*norm2+ylor(LineE3,Width3,tlag3)*norm3+ylor(LineE4,Width4,tlag4)*norm4+ylor(LineE5,Width5,tlag5)*norm5+ylor(LineE6,Width6,tlag6)*norm6+ylor(LineE7,Width7,tlag7)*norm7+ylor(LineE8,Width8,tlag8)*norm8+ylor(LineE9,Width9,tlag9)*norm9+ylor(LineE10,Width10,tlag10)*norm10,xlor(LineE1,Width1,tlag1)*norm1+xlor(LineE2,Width2,tlag2)*norm2+xlor(LineE3,Width3,tlag3)*norm3+xlor(LineE4,Width4,tlag4)*norm4+xlor(LineE5,Width5,tlag5)*norm5+xlor(LineE6,Width6,tlag6)*norm6+xlor(LineE7,Width7,tlag7)*norm7+xlor(LineE8,Width8,tlag8)*norm8+xlor(LineE9,Width9,tlag9)*norm9+xlor(LineE10,Width10,tlag10)*norm10) : add  
   
 \# Here I define the model to fit PS1. This would be like eq. 3 (first row) in Mendez 2024.  
 \# Notice that I only have 3 Lorentzians. All the others are set to 0 and frozen.  
-\# Also, I do not use 0, but 1e-10 as 0, because this makes the fits and the errors more stable. It  
-\# doees not make any difference because 1e-10 is effectively 0, but the fits are more stable.   
+\# Also, I do not use 0, but 1e-10 as minimum value, because this makes the fits and the errors 
+\# more stable. It doees not make any difference because 1e-10 is effectively 0, but the fits are 
+\# more stable.   
   
 model  1:1pds lorentz + lorentz + lorentz + lorentz + lorentz + lorentz + lorentz + lorentz + lorentz + lorentz  
       0.0580861       0.01      1e-10      1e-10      1e+10      1e+10  
@@ -128,8 +132,8 @@ model  1:1pds lorentz + lorentz + lorentz + lorentz + lorentz + lorentz + lorent
           1e-10         -1      1e-10      1e-10      1e+10      1e+10  
   
 \# Here I define the model to fit PS2. This would be like eq. 3 (second row) in Mendez et al. 2024.  
-\# Notice how some of the parameters are linked to those of PS1  
-\# I only leave the normalisations of the Lorentzians free  
+\# The central frequency and Width of the Lorentzians are linked to those in PS1. I only leave the  
+\# normalisations of the Lorentzians free  
   
 model  2:2pds lorentz + lorentz + lorentz + lorentz + lorentz + lorentz + lorentz + lorentz + lorentz + lorentz  
 = 1pds:p1  
@@ -164,8 +168,8 @@ model  2:2pds lorentz + lorentz + lorentz + lorentz + lorentz + lorentz + lorent
           1e-10         -1      1e-10      1e-10      1e+10      1e+10  
   
 \# Here I define the model to fit the Real part of the cross spectrum (first row of eq. 8 in Mendez et al. 2024)  
-\# Notice how some of the parameters are linked to PS1  
-  
+\# Central frequency and Width of the Lorentzians are linked to PS1
+
 model  3:3rea xlor + xlor + xlor + xlor + xlor + xlor + xlor + xlor + xlor + xlor  
 = 1pds:p1  
 = 1pds:p2  
