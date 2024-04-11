@@ -64,12 +64,14 @@ cosmo 70 0 0.73
 xset delta 0.01  
 xset LINECRITLEVEL  1e-12  
   
-\# This is the Lorentzian multiplied by the cosine of the lags for the Real part, as in eq. 7 of Mendez et al. 2024  
+\# This is the Lorentzian multiplied by the cosine of 2\pi times the time lags for the Real part, as in eq. 7 of Mendez et al. 2024  
   
 mdefine xlor Lorentz(LineE,Width)cos(2*3.14159265*E*tlag) : add  
   
-\# This is the Lorentzian multiplied by the sine of the lags for the Imaginary part, as in eq. 7 of Mendez et al. 2024 
-  
+\# This is the Lorentzian multiplied by the sine of 2\pi times the time lags for the Imaginary part, as in eq. 7 of Mendez et al. 2024 
+
+\# In this case, the parameter tlag is independent of Fourier frequency
+
 mdefine ylor Lorentz(LineE,Width)sin(2*3.14159265*E*tlag) : add  
   
 \# This is the definition of the coherence as in eq. 10 of Mendez et al. 2024  
