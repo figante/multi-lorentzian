@@ -70,10 +70,10 @@ mdefine xlor Lorentz(LineE,Width)cos(2*3.14159265*E*tlag) : add
   
 \# This is the Lorentzian multiplied by the sine of 2\pi times the time lags for the Imaginary part, as in eq. 7 of Mendez et al. 2024 
 
-\# In this case, the parameter tlag is independent of Fourier frequency
-
 mdefine ylor Lorentz(LineE,Width)sin(2*3.14159265*E*tlag) : add  
   
+\# In this case, the time lags (parameter tlag) is independent of Fourier frequency
+
 \# This is the definition of the coherence as in eq. 10 of Mendez et al. 2024  
   
 \# Because the way it is defined, I need to put inside more  
