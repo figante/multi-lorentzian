@@ -88,7 +88,7 @@ mdefine coherence ((xlor(LineE1,Width1,plag1)*norm1+xlor(LineE2,Width2,plag2)*no
 mdefine plags atan2(ylor(LineE1,Width1,plag1)*norm1+ylor(LineE2,Width2,plag2)*norm2+ylor(LineE3,Width3,plag3)*norm3+ylor(LineE4,Width4,plag4)*norm4+ylor(LineE5,Width5,plag5)*norm5+ylor(LineE6,Width6,plag6)*norm6+ylor(LineE7,Width7,plag7)*norm7+ylor(LineE8,Width8,plag8)*norm8+ylor(LineE9,Width9,plag9)*norm9+ylor(LineE10,Width10,plag10)*norm10,xlor(LineE1,Width1,plag1)*norm1+xlor(LineE2,Width2,plag2)*norm2+xlor(LineE3,Width3,plag3)*norm3+xlor(LineE4,Width4,plag4)*norm4+xlor(LineE5,Width5,plag5)*norm5+xlor(LineE6,Width6,plag6)*norm6+xlor(LineE7,Width7,plag7)*norm7+xlor(LineE8,Width8,plag8)*norm8+xlor(LineE9,Width9,plag9)*norm9+xlor(LineE10,Width10,plag10)*norm10) : add  
   
 \# Here I define the model to fit PS1. This would be like eq. 3 (first row) in Mendez 2024.  
-\# Notice that I only have 3 Lorentzxians. All the others are set to 0 and frozen.  
+\# Notice that I only have 3 Lorentzians. All the others are set to 0 and frozen.  
 \# Also, I do not use 0, but 1e-10 as 0, because this makes the fits and the errors more stable. It  
 \# doees not make any difference because 1e-10 is effectively 0, but the fits are more stable.   
   
