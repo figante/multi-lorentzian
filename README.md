@@ -18,3 +18,5 @@ and compute the derived model of these two on the basis of the model fitted to
 PS1, PS2, RE and IM.    
 
 See for [Mendez et al. 2024](https://ui.adsabs.harvard.edu/abs/2024MNRAS.527.9405M/abstract) for details    
+
+Download the .tar.gz file with all the data and .xcm files for the example
