@@ -106,8 +106,10 @@ mdefine xlor Lorentz(LineE,Width)*cos(plag) : add
 
 mdefine ylor Lorentz(LineE,Width)*sin(plag) : add
 
-\# This is the definition of the coherence as in eq. 10 of Mendez
-et al. 2024
+\# In this case, the phase lags (parameter plag) is independent of Fourier frequency
+
+
+\# This is the definition of the coherence as in eq. 10 of Mendez et al. 2024
 
 \# I put inside 10 Lorentizans, more than I would usually need in
 \# the model.  I will use. This is so because if I want to add another
