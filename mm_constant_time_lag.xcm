@@ -1,0 +1,442 @@
+# multi-lorentzian    
+# .xcm file for Xspec to fit simultaneously:    
+  
+# Power spectrum band 1 (PS1)    
+# Power spectrum band 2 (PS2)    
+# Real part of the cross spectrum of band 1 vs. band 2 (RE)    
+# Imaginary part of the cross spectrum of band 1 vs. band 2 (IM)    
+#
+# The .xcm file uses a linear combination of Lorentizans to fit PS1 and PS2    
+# and a combination of Lorentzians multiplied by the cosine (sine) of a parameter    
+# (the phase lag) to RE (IM).    
+#
+# The .xcm file also reads the phase-lag (PL) spectrum and the coherence function (CF)    
+# and computes the derived model of these two on the basis of the model fitted to   
+# PS1, PS2, RE and IM.    
+#  
+# This one assumes the constant phase-lags model
+# See [Mendez et al. 2024](https://ui.adsabs.harvard.edu/abs/2024MNRAS.527.9405M/abstract) for details    
+  
+statistic chi  
+  
+# Here I read the data. I read 6 datasets: Numbers 1 and 2 are PS1 and PS2   
+# (in the soft and hard bands, respectively), 3 and 4 are, respectively  
+# the RE and IM of the cross spectrum using the same energy bands as for PS1  
+# and PS2, and 5 and 6 are, respectively, PL and CF for the same 2 bands.  
+  
+# One thing to notice is the way I define the responses. By doing it  
+# that way I can define, below, 6 different models, one for each of the  
+# 6 different datasets. Read the Xspec manual for this (named models,  
+# data command and response command) 
+
+data 1:1 rms_0_13.pha
+response  1:1 rms_0_13.rmf
+
+data 2:2 rms_14_35.pha
+response  1:2 none
+response  2:2 rms_14_35.rmf
+
+data 3:3 real_0_13_14_35.pha
+response  1:3 none
+response  3:3 real_0_13_14_35.rmf
+
+data 4:4 imag_0_13_14_35.pha
+response  1:4 none
+response  4:4 imag_0_13_14_35.rmf
+
+data 5:5 plag_0_13_14_35.pha
+response  1:5 none
+response  5:5 plag_0_13_14_35.rmf
+
+data 6:6 cohe_0_13_14_35.pha
+response  1:6 none
+response  6:6 cohe_0_13_14_35.rmf
+
+# In this example I ignore everuthing above 20 Hz for PS1, PS2,
+# RE and IM, and everything for PL and CF (since we are not fitting
+# the last two; we can notice them after the fit)
+
+ignore 1:1,202-251 2:1,202-251 3:1,202-251 4:1,202-251 5:1-251 6:1-251
+
+# You can do the same in frequency units:
+# ignore 1-4:20.-** ignore 5-6:**
+#
+# When you save the .xcm file Xspec write the ignore in channel units
+# as above 
+
+# Later, when you want to notice the lags and coherence, after the fit, you can do this:
+#
+# notice 5-6:**
+# ignore 5-6:20.-**
+# ignore bad
+
+# This notices first all channels of 5-6, then ignores everything above 20 Hz for both,
+# and finally ignores bad channels (usually high-frequency channels of the coherence give
+# NaN because the ppower is low and the errors end up computing the sqrt of a negative
+# number
+
+# Notice that you may need to ignore more channels if the data of the lags and coherence
+# at high frequency is too noisy, or affected by dead-time induced cross talk
+
+# These are standard Xspec settings.  
+
+method leven 100 0.01
+abund wilm
+xsect vern
+cosmo 70 0 0.73
+xset delta 0.01
+
+# This command draws the Lorentzians down to 1e-12 of the peak value
+# (see manual)r. 
+# This is only for the plot, to avoid that sometimes the plot of a 
+# Lorentzian may show a discontinuity at the very bottom
+
+xset LINECRITLEVEL  1e-12
+
+# no systematic error
+
+systematic 0
+
+# This is the Lorentzian multiplied by the cosine of 2\pi times the time lags for the Real part, as in eq. 7 of Mendez et al. 2024  
+# See command 'mdefine' in Xspec
+  
+mdefine xlor Lorentz(LineE,Width)cos(2*3.14159265*E*tlag) : add  
+  
+# This is the Lorentzian multiplied by the sine of 2\pi times the time lags for the Imaginary part, as in eq. 7 of Mendez et al. 2024 
+
+mdefine ylor Lorentz(LineE,Width)sin(2*3.14159265*E*tlag) : add  
+  
+# In this case, the time lags (parameter tlag) is independent of Fourier frequency
+
+# This is the definition of the coherence as in eq. 10 of Mendez et al. 2024
+
+# I put inside 10 Lorentizans, more than I would usually need in
+# the model.  I will use. This is so because if I want to add another
+# Lorentzian later on, I cannot use "addcomp" in Xspec, and I have
+# to define the whole model again.  By doing it this way I can put
+# the norms of all the unnecessary Lorentzians to 0 at the start,
+# and freeze all the parameters of the Lorentzian, such that they
+# are not part of the model, and let them free one by one if I need
+# to add a new Lorentzian to the model.
+
+mdefine coherence ((xlor(LineE1,Width1,plag1)*norm1+xlor(LineE2,Width2,plag2)*norm2+xlor(LineE3,Width3,plag3)*norm3+xlor(LineE4,Width4,plag4)*norm4+xlor(LineE5,Width5,plag5)*norm5+xlor(LineE6,Width6,plag6)*norm6+xlor(LineE7,Width7,plag7)*norm7+xlor(LineE8,Width8,plag8)*norm8+xlor(LineE9,Width9,plag9)*norm9+xlor(LineE10,Width10,plag10)*norm10)**2+(ylor(LineE1,Width1,plag1)*norm1+ylor(LineE2,Width2,plag2)*norm2+ylor(LineE3,Width3,plag3)*norm3+ylor(LineE4,Width4,plag4)*norm4+ylor(LineE5,Width5,plag5)*norm5+ylor(LineE6,Width6,plag6)*norm6+ylor(LineE7,Width7,plag7)*norm7+ylor(LineE8,Width8,plag8)*norm8+ylor(LineE9,Width9,plag9)*norm9+ylor(LineE10,Width10,plag10)*norm10)**2)/((Lorentz(LineE1,Width1)*nn1+Lorentz(LineE2,Width2)*nn2+Lorentz(LineE3,Width3)*nn3+Lorentz(LineE4,Width4)*nn4+Lorentz(LineE5,Width5)*nn5+Lorentz(LineE6,Width6)*nn6+Lorentz(LineE7,Width7)*nn7+Lorentz(LineE8,Width8)*nn8+Lorentz(LineE9,Width9)*nn9+Lorentz(LineE10,Width10)*nn10)*(Lorentz(LineE1,Width1)*mm1+Lorentz(LineE2,Width2)*mm2+Lorentz(LineE3,Width3)*mm3+Lorentz(LineE4,Width4)*mm4+Lorentz(LineE5,Width5)*mm5+Lorentz(LineE6,Width6)*mm6+Lorentz(LineE7,Width7)*mm7+Lorentz(LineE8,Width8)*mm8+Lorentz(LineE9,Width9)*mm9+Lorentz(LineE10,Width10)*mm10)) : add
+
+# This is the definition of the lags as in eq. 9 of Mendez et
+# al. 2024. Like for the coherence, I define the model with 10
+# Lorentzians that have normalisations set to 0 and all parameters
+# frozen, so that they are not in the model, but I can add them
+# later if I need them.
+
+mdefine plags atan2(ylor(LineE1,Width1,plag1)*norm1+ylor(LineE2,Width2,plag2)*norm2+ylor(LineE3,Width3,plag3)*norm3+ylor(LineE4,Width4,plag4)*norm4+ylor(LineE5,Width5,plag5)*norm5+ylor(LineE6,Width6,plag6)*norm6+ylor(LineE7,Width7,plag7)*norm7+ylor(LineE8,Width8,plag8)*norm8+ylor(LineE9,Width9,plag9)*norm9+ylor(LineE10,Width10,plag10)*norm10,xlor(LineE1,Width1,plag1)*norm1+xlor(LineE2,Width2,plag2)*norm2+xlor(LineE3,Width3,plag3)*norm3+xlor(LineE4,Width4,plag4)*norm4+xlor(LineE5,Width5,plag5)*norm5+xlor(LineE6,Width6,plag6)*norm6+xlor(LineE7,Width7,plag7)*norm7+xlor(LineE8,Width8,plag8)*norm8+xlor(LineE9,Width9,plag9)*norm9+xlor(LineE10,Width10,plag10)*norm10) : add
+
+# Here I define the model to fit PS1 and give parameters. This
+# would be like eq. 3 (first row) in Mendez 2024.  Notice that I
+# defined the model with 10  Lorentzians but I ionly use 8. The 
+# other two are set to 0 and frozen. 
+# Also, I do not use 0, but 1e-10, and set the possible minimum 
+# value for the parameter also to 1e-10 (both min and bot; see manual)
+# It does not make any difference because 1e-10 is effectively 0, 
+# but this makes that the fits are more stable.
+# See also that I make sure that the maximum allowed values of the
+# parameters (both max and top) are high enough (for instance, the
+# max of the FWHM of a Lorentzian in Xspec is 10 and the top is 20;
+# that is too low for some QPOs of BBN).
+
+# About the names of the models:
+# You can use any name you want.
+# I use:
+
+# 1pds -> fits PS1
+# 2pds -> fits PS2
+# 3rea -> fits RE
+# 4ima -> fits IM
+# 5pla -> "fits" PL (actually we do not fit the lags, but predict them after the fit)
+# 6coh -> "fits" CF (actually we do not fit the coherence functi0n, but predict it after the fit)
+
+# because Xspec, when you use the show command, displays the models alphabetically 
+# and I want to see them in this order (so the number at the front)
+# I also prefer that all model have names with the same length, but that is my
+# own choice
+
+model  1:1pds lorentz + lorentz + lorentz + lorentz + lorentz + lorentz + lorentz + lorentz + lorentz + lorentz
+        1.38664       0.01      1e-10      1e-10      1e+10      1e+10
+       0.295485       0.01      1e-10      1e-10      1e+10      1e+10
+     0.00332586       0.01      1e-10      1e-10      1e+10      1e+10
+       0.799446       0.01      1e-10      1e-10      1e+10      1e+10
+       0.628563       0.01      1e-10      1e-10      1e+10      1e+10
+     0.00411853       0.01      1e-10      1e-10      1e+10      1e+10
+       0.694332       0.01      1e-10      1e-10      1e+10      1e+10
+      0.0837883       0.01      1e-10      1e-10      1e+10      1e+10
+     0.00681211       0.01      1e-10      1e-10      1e+10      1e+10
+      0.0294514       0.01      1e-10      1e-10      1e+10      1e+10
+       0.108262       0.01      1e-10      1e-10      1e+10      1e+10
+     0.00405354       0.01      1e-10      1e-10      1e+10      1e+10
+        2.58499       0.01      1e-10      1e-10      1e+10      1e+10
+        2.56245       0.01      1e-10      1e-10      1e+10      1e+10
+      0.0017365       0.01      1e-10      1e-10      1e+10      1e+10
+       0.300739       0.01      1e-10      1e-10      1e+10      1e+10
+       0.457503       0.01      1e-10      1e-10      1e+10      1e+10
+     0.00373453       0.01      1e-10      1e-10      1e+10      1e+10
+        1.98366       0.01      1e-10      1e-10      1e+10      1e+10
+       0.723922       0.01      1e-10      1e-10      1e+10      1e+10
+     0.00159656       0.01      1e-10      1e-10      1e+10      1e+10
+        6.76683       0.01      1e-10      1e-10      1e+10      1e+10
+        6.87661       0.01      1e-10      1e-10      1e+10      1e+10
+    8.13338e-05       0.01      1e-10      1e-10      1e+10      1e+10
+          1e-10         -1      1e-10      1e-10      1e+10      1e+10
+          1e-10         -1      1e-10      1e-10      1e+10      1e+10
+          1e-10         -1      1e-10      1e-10      1e+10      1e+10
+          1e-10         -1      1e-10      1e-10      1e+10      1e+10
+          1e-10         -1      1e-10      1e-10      1e+10      1e+10
+          1e-10         -1      1e-10      1e-10      1e+10      1e+10
+
+# Here I define the model to fit PS2. This would be like eq. 3 (second row) in Mendez et al. 2024.  
+# The central frequency and Width of the Lorentzians are linked to those in PS1. I only leave the  
+# normalisations of the Lorentzians free  
+
+model  2:2pds lorentz + lorentz + lorentz + lorentz + lorentz + lorentz + lorentz + lorentz + lorentz + lorentz
+= 1pds:p1
+= 1pds:p2
+     0.00400794       0.01      1e-10      1e-10      1e+10      1e+10
+= 1pds:p4
+= 1pds:p5
+     0.00504163       0.01      1e-10      1e-10      1e+10      1e+10
+= 1pds:p7
+= 1pds:p8
+      0.0117446       0.01      1e-10      1e-10      1e+10      1e+10
+= 1pds:p10
+= 1pds:p11
+     0.00135737       0.01      1e-10      1e-10      1e+10      1e+10
+= 1pds:p13
+= 1pds:p14
+     0.00308694       0.01      1e-10      1e-10      1e+10      1e+10
+= 1pds:p16
+= 1pds:p17
+     0.00438431       0.01      1e-10      1e-10      1e+10      1e+10
+= 1pds:p19
+= 1pds:p20
+     0.00235696       0.01      1e-10      1e-10      1e+10      1e+10
+= 1pds:p22
+= 1pds:p23
+    0.000245479       0.01      1e-10      1e-10      1e+10      1e+10
+= 1pds:p25
+= 1pds:p26
+          1e-10         -1      1e-10      1e-10      1e+10      1e+10
+= 1pds:p28
+= 1pds:p29
+          1e-10         -1      1e-10      1e-10      1e+10      1e+10
+
+# Here I define the model to fit the Real part of the cross spectrum (first row of eq. 8 in Mendez et al. 2024)  
+# Central frequency and Width of the Lorentzians are linked to PS1
+# The free parameters are the phase lags and the normalisation of the Lorentzians in the cross spectrum.
+# In reality, if each Lorentzian is perfectly coherent in the two energy bands, this normalisation should be
+# equal to sqrt(norm_PS1 norm_PS2). You can link them that way, if you want, or let them free and check that
+# in the end they are consistent with this relation.
+# if you want to link them you would have to say, for instance for parameter 4:
+# = sqrt(1pds:3*2pds:3)
+# and the same for parameters 8, 12, 16, 20, 24, 28, 32, 26 and 40.
+
+model  3:3rea xlor + xlor + xlor + xlor + xlor + xlor + xlor + xlor + xlor + xlor
+= 1pds:p1
+= 1pds:p2
+      0.0116073       0.01     -1e+22     -1e+22      1e+22      1e+22
+     0.00363392       0.01      1e-10      1e-10      1e+20      1e+24
+= 1pds:p4
+= 1pds:p5
+     0.00326934       0.01     -1e+22     -1e+22      1e+22      1e+22
+     0.00491551       0.01      1e-10      1e-10      1e+10      1e+10
+= 1pds:p7
+= 1pds:p8
+      0.0622707       0.01     -1e+22     -1e+22      1e+22      1e+22
+     0.00891187       0.01      1e-10      1e-10      1e+10      1e+10
+= 1pds:p10
+= 1pds:p11
+       0.616992       0.01     -1e+22     -1e+22      1e+22      1e+22
+     0.00220124       0.01      1e-10      1e-10      1e+20      1e+24
+= 1pds:p13
+= 1pds:p14
+     0.00743839       0.01     -1e+22     -1e+22      1e+22      1e+22
+     0.00253616       0.01      1e-10      1e-10      1e+10      1e+10
+= 1pds:p16
+= 1pds:p17
+       0.143535       0.01     -1e+22     -1e+22      1e+22      1e+22
+     0.00383384       0.01      1e-10      1e-10      1e+10      1e+10
+= 1pds:p19
+= 1pds:p20
+      0.0112949       0.01     -1e+22     -1e+22      1e+22      1e+22
+     0.00198397       0.01      1e-10      1e-10      1e+10      1e+10
+= 1pds:p22
+= 1pds:p23
+     -0.0130301       0.01     -1e+22     -1e+22      1e+22      1e+22
+    0.000307343       0.01      1e-10      1e-10      1e+10      1e+10
+= 1pds:p25
+= 1pds:p26
+            0.1         -1     -1e+22     -1e+22      1e+22      1e+22
+          1e-10         -1      1e-10      1e-10      1e+10      1e+10
+= 1pds:p28
+= 1pds:p29
+            0.1         -1     -1e+22     -1e+22      1e+22      1e+22
+          1e-10         -1      1e-10      1e-10      1e+10      1e+10
+
+# Here I define the model to fit the Imaginary part of the cross spectrum (secopnd row of eq. 8 in Mendez et al. 2024).  
+# Notice that there is no free parameters cause these are the same parameters of the Real part (see eq. 8 in Mendez et al.. 2024),   
+
+model  4:4ima ylor + ylor + ylor + ylor + ylor + ylor + ylor + ylor + ylor + ylor
+= 3rea:p1
+= 3rea:p2
+= 3rea:p3
+= 3rea:p4
+= 3rea:p5
+= 3rea:p6
+= 3rea:p7
+= 3rea:p8
+= 3rea:p9
+= 3rea:p10
+= 3rea:p11
+= 3rea:p12
+= 3rea:p13
+= 3rea:p14
+= 3rea:p15
+= 3rea:p16
+= 3rea:p17
+= 3rea:p18
+= 3rea:p19
+= 3rea:p20
+= 3rea:p21
+= 3rea:p22
+= 3rea:p23
+= 3rea:p24
+= 3rea:p25
+= 3rea:p26
+= 3rea:p27
+= 3rea:p28
+= 3rea:p29
+= 3rea:p30
+= 3rea:p31
+= 3rea:p32
+= 3rea:p33
+= 3rea:p34
+= 3rea:p35
+= 3rea:p36
+= 3rea:p37
+= 3rea:p38
+= 3rea:p39
+= 3rea:p40
+
+# Here I define the model of the lags. Notice that there is no free parameter,   
+# because the values of the parameters come fromt the fit of PS1 PS2 RE and IM  
+  
+model  5:5pla plags
+= 3rea:p1
+= 3rea:p2
+= 3rea:p3
+= 3rea:p4
+= 3rea:p5
+= 3rea:p6
+= 3rea:p7
+= 3rea:p8
+= 3rea:p9
+= 3rea:p10
+= 3rea:p11
+= 3rea:p12
+= 3rea:p13
+= 3rea:p14
+= 3rea:p15
+= 3rea:p16
+= 3rea:p17
+= 3rea:p18
+= 3rea:p19
+= 3rea:p20
+= 3rea:p21
+= 3rea:p22
+= 3rea:p23
+= 3rea:p24
+= 3rea:p25
+= 3rea:p26
+= 3rea:p27
+= 3rea:p28
+= 3rea:p29
+= 3rea:p30
+= 3rea:p31
+= 3rea:p32
+= 3rea:p33
+= 3rea:p34
+= 3rea:p35
+= 3rea:p36
+= 3rea:p37
+= 3rea:p38
+= 3rea:p39
+= 3rea:p40
+              1         -1          0          0      1e+20      1e+24
+
+# The normallisation of the model "plags" is set by Xspec, but it should be 1 and not be fitted.
+
+# Here I define the model of the coherence. Notice that there is no free parameter,   
+# because the values of the parameters come fromt the fit of PS1 PS2 RE and IM  
+
+model  6:6coh coherence
+= 3rea:p1
+= 3rea:p2
+= 3rea:p3
+= 3rea:p4
+= 3rea:p5
+= 3rea:p6
+= 3rea:p7
+= 3rea:p8
+= 3rea:p9
+= 3rea:p10
+= 3rea:p11
+= 3rea:p12
+= 3rea:p13
+= 3rea:p14
+= 3rea:p15
+= 3rea:p16
+= 3rea:p17
+= 3rea:p18
+= 3rea:p19
+= 3rea:p20
+= 3rea:p21
+= 3rea:p22
+= 3rea:p23
+= 3rea:p24
+= 3rea:p25
+= 3rea:p26
+= 3rea:p27
+= 3rea:p28
+= 3rea:p29
+= 3rea:p30
+= 3rea:p31
+= 3rea:p32
+= 3rea:p33
+= 3rea:p34
+= 3rea:p35
+= 3rea:p36
+= 3rea:p37
+= 3rea:p38
+= 3rea:p39
+= 3rea:p40
+= 1pds:p3
+= 1pds:p6
+= 1pds:p9
+= 1pds:p12
+= 1pds:p15
+= 1pds:p18
+= 1pds:p21
+= 1pds:p24
+= 1pds:p27
+= 1pds:p30
+= 2pds:p3
+= 2pds:p6
+= 2pds:p9
+= 2pds:p12
+= 2pds:p15
+= 2pds:p18
+= 2pds:p21
+= 2pds:p24
+= 2pds:p27
+= 2pds:p30
+              1         -1          0          0      1e+20      1e+24
+
+# The normallisation of the model "coherence" is set by Xspec, but it should be 1 and not be fitted.
+
+bayes off
