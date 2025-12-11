@@ -1,4 +1,4 @@
-Here you'll find two .xcm files for Xspec to fit simultaneously:    
+Here you'll find six spectra (with corresponding matrices) and two .xcm files for Xspec to fit simultaneously:
 
 Power spectrum band 1 (PS1)    
 Power spectrum band 2 (PS2)    
